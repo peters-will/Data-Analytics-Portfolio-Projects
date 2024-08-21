@@ -1,6 +1,9 @@
 SELECT * FROM airline_delay_cleaned;
 
+-- -----------------------------------------------------------
 -- ***DATA CLEANING/WRANGLING***
+-- -----------------------------------------------------------
+
 -- Create a new column to combine two columns into
 
 ALTER TABLE airline_delay_cleaned
