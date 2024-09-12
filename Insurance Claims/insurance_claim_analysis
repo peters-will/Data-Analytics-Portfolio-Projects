@@ -1,0 +1,114 @@
+
+
+/*  --------------------
+	Case Study Questions
+    -------------------- */
+    
+-- 1. What age has the highest amount of claims, on average? (ANS: 22!)
+-- 2. On average, what region has the highest claim amount? (The North East!)
+-- 3. On average, do smokers have higher claim costs?
+-- 4. Do people who have more kids smoke more? What's the relation to claims? 
+-- 5. Does having high blood pressure indicate higher claims?
+-- 6. Is there a correlation between having more children and higher claim costs?
+-- 7. Total children per region
+-- 8. What are the average claim amounts for each class of BMI? (underweight, healthy weight, over weight, and obese).
+
+
+/*  --------------------
+	DATA CLEANING
+    -------------------- */
+
+-- Find where blank cells are (columns age and region)
+SELECT * from insurance_data
+where claim = '';
+
+-- Turn off safe mode to make changes
+SET SQL_SAFE_UPDATES = 0;
+
+-- Delete blank columns for data integrity
+DELETE FROM insurance_data
+WHERE age = '' OR region = '';
+
+-- Rename PatientID column 
+ALTER TABLE insurance_data
+RENAME COLUMN PatientID TO patient_id;
+
+-- Turn safe mode back on
+SET SQL_SAFE_UPDATES = 1;
+
+/*  --------------------
+	DATA ANALYSIS
+    -------------------- */
+
+-- 1. What age has the highest amount of claims, on average? (ANS: 22!)
+SELECT
+	age, 
+    ROUND(AVG(claim), 2) AS total_claims
+FROM insurance_data
+GROUP BY age
+ORDER BY total_claims DESC;
+    
+-- 2. On average, what region has the highest claim amount? (The North East!)
+SELECT
+	region, 
+    ROUND(AVG(claim), 2) AS total_claims
+FROM insurance_data
+GROUP BY region
+ORDER BY total_claims DESC;
+
+-- 3. On average, do smokers have higher claim costs? (ANS: yes, big time. almost 4X the claim amount for smokers).
+SELECT
+	smoker, 
+    ROUND(AVG(claim), 2) AS total_claims
+FROM insurance_data
+GROUP BY smoker
+ORDER BY total_claims;
+
+-- 4. Do people who have more kids smoke more? What's the relation to claims? (ANS: No! as num kids increase, smoking decreases)
+SELECT
+	children, 
+    COUNT(smoker) AS num_smokers,
+    ROUND(AVG(claim)) AS avg_claims
+FROM insurance_data
+WHERE smoker = 'Yes'
+GROUP BY children
+ORDER BY num_smokers;
+
+-- 5. Does having high blood pressure indicate higher claims?
+SELECT
+	bloodpressure,
+    ROUND(claim) AS claims
+FROM insurance_data
+GROUP BY bloodpressure
+ORDER BY claims DESC;
+
+-- 6. Is there a correlation between having more children and higher claim costs?
+SELECT
+	children,
+    ROUND(AVG(claim)) AS total_claims
+FROM insurance_data
+GROUP BY children
+ORDER BY total_claims DESC; 
+
+-- 7. Total children per region
+SELECT
+	region,
+    SUM(children) AS total_children
+FROM insurance_data
+GROUP BY region;
+
+-- 8. What are the average claim amounts for each class of BMI? (underweight, healthy weight, over weight, and obese).
+SELECT 
+	ROUND(AVG(CASE
+			WHEN bmi BETWEEN 18 AND 24 THEN claim
+            ELSE NULL
+            END), 2) AS normal_bmi_claim_avg,
+	ROUND(AVG(CASE
+			WHEN bmi BETWEEN 25 AND 29 THEN claim
+            ELSE NULL
+            END), 2) AS overweight_bmi_claim_avg,
+	ROUND(AVG(CASE
+			WHEN bmi >= 30 THEN claim
+            ELSE NULL
+            END), 2) AS obese_bmi_claim_avg
+FROM insurance_data;
